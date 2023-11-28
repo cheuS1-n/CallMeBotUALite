@@ -9,6 +9,7 @@ def LParseUserInfo(UID):
         return False
     return info
 
+
 def LParseUserInfoC(UID, CID):
     try:
         info = executeSQL(f"SELECT * from MainLite WHERE UserID={UID} AND ChannelID={CID}").fetchall()
