@@ -1,7 +1,6 @@
 from datetime import *
 import logging
 
-
 import mysql
 import yaml
 from mysql import connector

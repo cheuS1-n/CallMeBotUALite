@@ -9,7 +9,6 @@ logger = logging.getLogger("Func_file_error")
 logger_func = logging.getLogger("Func_file")
 
 
-
 def AddNewProfile(CID, UID, UNickName):
     MV = 0
     set = ParseUserSettings(UID)

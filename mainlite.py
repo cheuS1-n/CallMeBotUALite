@@ -24,7 +24,6 @@ with open('config.yaml', 'r') as file:
     token = token['TOKEN']
 
 
-
 async def start_private_chat(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_name = update.effective_user.full_name
     chat = update.effective_chat
