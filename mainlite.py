@@ -55,8 +55,9 @@ async def All(update: Update, context: ContextTypes.DEFAULT_TYPE):
     GMV = 0
     for x in info:
         if x[2].startswith("!"):
-            id = x[2].replace("!", "")
-            PINGLIST.extend([f"[{update.effective_user.first_name}](tg://user?id={[id]})"])
+            id = x[1]
+            nick = x[2].replace("!", "")
+            PINGLIST.extend([f"[{nick}](tg://user?id={id})"])
             break
         else:
             PINGLIST.extend([f"@{x[2]}"])
@@ -70,7 +71,7 @@ async def All(update: Update, context: ContextTypes.DEFAULT_TYPE):
         GMV = GMV + 1
         if (MV % 4) == 0:
             print("SENDMSG MV%")
-            await update.effective_chat.send_message(' '.join(PRINTLIST))
+            await update.effective_chat.send_message(' '.join(PRINTLIST), parse_mode=telegram.constants.ParseMode.MARKDOWN)
             PRINTLIST.clear()
         elif (MV % 4) > 0:
             print("MV%>0")
@@ -79,11 +80,11 @@ async def All(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 for x in range(len(PINGLIST) - MV):
                     PRINTLIST.extend([f"{PINGLIST[MV]}"])
                     MV = MV + 1
-                await update.effective_chat.send_message(' '.join(PRINTLIST))
+                await update.effective_chat.send_message(' '.join(PRINTLIST), parse_mode=telegram.constants.ParseMode.MARKDOWN)
                 break
 
         print(f"{MV % 4} |||")
-        t.sleep(0.2)
+        t.sleep(0.1)
 
     print(PINGLIST)
 
@@ -109,31 +110,52 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print(UID)
     print(CID)
     print(info)
+    if len(info) == 0:
+        print("LEN 0")
+        if update.effective_user.username is None:
+            if LAddNewProfile(CID, UID, f"!{update.effective_user.first_name}"):
+                print(f"User added, alternative method")
+            else:
+                print("Dont added")
+            return
+
+
     if update.effective_user.username is None:
         print("NONE")
-        if str(info[0][1]).startswith("!"):
-            if str(info[0][1]) == str(f"!{update.effective_user.id}"):
+        if str(info[0][2]).startswith("!"):
+            if str(info[0][2]) == str(f"!{update.effective_user.first_name}"):
                 print("Update not need, nicks are indentical | Alternative method")
                 return
             else:
-                if ChangeNick(update.effective_user.id, f"!{update.effective_chat.id}"):
+                if ChangeNick(update.effective_user.id, f"!{update.effective_chat.first_name}"):
                     print("NICK CHANGED! But user dont have nick, used alternative method.")
                     return
                 else:
                     logger.error("NICKS DONT CHANGED, CHANGE ERROR! | Alternative method.")
                     return
-    if len(info) == 0:
-        print("LEN 0")
-        LAddNewProfile(CID, UID, UNick)
     if str(info[0][2]) == str(UNick):
         print("Update not need, nicks are indentical")
         return
-
-
     if ChangeNick(UID, UNick):
         print("NICK CHANGED")
     else:
         print("Nick Dont changed")
+
+async def Info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.effective_message.reply_text(
+        "Інформація про бота та інше.\n"
+        'Бот "Поклич мене! Lite" є вашим помічником, який покличе всіх у потрібний момент)\n'
+        'Версія: 1.0\n'
+        "Власник: @Quality2Length",
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton(text='Github', url='https://github.com/cheuS1-n/CallMeBotUALite/')]
+        ])
+    )
+async def AllPingsUsers(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_chat.type == "private":
+        await update.effective_message.reply_text("Використовуйте цю команду тільки в чаті групи!")
+        return
+    await update.effective_message.reply_text(f"Я можу покликати: {len(ParseAllUsers(update.effective_chat.id))} користувача(-ів). \nДетальніше у Wiki.")
 
 
 def STARTL():
@@ -141,6 +163,8 @@ def STARTL():
         Lapplication = ApplicationBuilder().token(token).build()
         Lapplication.add_handler(CommandHandler('start', start_private_chat))
         Lapplication.add_handler(CommandHandler('all', All))
+        Lapplication.add_handler(CommandHandler('info', Info))
+        Lapplication.add_handler(CommandHandler('allusers', AllPingsUsers))
         Lapplication.add_handler(MessageHandler(filters.ALL, Updater))
         Lapplication.run_polling()
 

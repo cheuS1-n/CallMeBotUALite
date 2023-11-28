@@ -3,7 +3,7 @@ from MySQL_Driver import *
 
 def LParseUserInfo(UID):
     try:
-        info = executeSQL(f"SELECT * from MainLite WHERE UserID={UID}").fetchall()
+        info = executeSQL(f"SELECT * from Main WHERE UserID={UID}").fetchall()
     except Exception as e:
         logger.exception(f"Виникла помилка в функції ParseUserInfo. DEBUG:\n UserID: {UID}\nException: {e}")
         return False
@@ -11,7 +11,7 @@ def LParseUserInfo(UID):
 
 def LParseUserInfoC(UID, CID):
     try:
-        info = executeSQL(f"SELECT * from MainLite WHERE UserID={UID} AND ChannelID={CID}").fetchall()
+        info = executeSQL(f"SELECT * from Main WHERE UserID={UID} AND ChannelID={CID}").fetchall()
     except Exception as e:
         logger.exception(f"Виникла помилка в функції ParseUserInfo. DEBUG:\n UserID: {UID}\nException: {e}")
         return False
@@ -19,7 +19,7 @@ def LParseUserInfoC(UID, CID):
 def LAddNewProfile(CID, UID, UNickName):
     try:
         executeSQL(
-            "INSERT INTO `MainLite` (`ChannelID`, `UserID`, `UserNickname`) "
+            "INSERT INTO `Main` (`ChannelID`, `UserID`, `UserNickname`) "
             f"VALUES ('{CID}', '{UID}', '{UNickName}');")
     except Exception as e:
         logger.exception(f"Виникла помилка в функції AddNewProfile(Main). DEBUG:\nException: {e}")
@@ -30,7 +30,7 @@ def LAddNewProfile(CID, UID, UNickName):
 
 def LParseAllUsers(CID):
     try:
-        info = executeSQL(f"SELECT * from MainLite WHERE ChannelID={CID}").fetchall()
+        info = executeSQL(f"SELECT * from Main WHERE ChannelID={CID}").fetchall()
     except Exception as e:
         logger.exception(f"Виникла помилка в функції ParseUserSettings. DEBUG:\n ChannelID: {CID}\nException: {e}")
         return False
