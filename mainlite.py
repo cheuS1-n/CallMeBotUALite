@@ -17,7 +17,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 logging.getLogger("httpx").setLevel(logging.WARNING)
-logger = logging.getLogger("Lite_Extension")
+loggerm = logging.getLogger("Lite_Extension")
 
 with open('config.yaml', 'r') as file:
     token = yaml.safe_load(file)
@@ -71,7 +71,8 @@ async def All(update: Update, context: ContextTypes.DEFAULT_TYPE):
         GMV = GMV + 1
         if (MV % 4) == 0:
             print("SENDMSG MV%")
-            await update.effective_chat.send_message(' '.join(PRINTLIST), parse_mode=telegram.constants.ParseMode.MARKDOWN)
+            await update.effective_chat.send_message(' '.join(PRINTLIST),
+                                                     parse_mode=telegram.constants.ParseMode.MARKDOWN)
             PRINTLIST.clear()
         elif (MV % 4) > 0:
             print("MV%>0")
@@ -80,7 +81,8 @@ async def All(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 for x in range(len(PINGLIST) - MV):
                     PRINTLIST.extend([f"{PINGLIST[MV]}"])
                     MV = MV + 1
-                await update.effective_chat.send_message(' '.join(PRINTLIST), parse_mode=telegram.constants.ParseMode.MARKDOWN)
+                await update.effective_chat.send_message(' '.join(PRINTLIST),
+                                                         parse_mode=telegram.constants.ParseMode.MARKDOWN)
                 break
 
         print(f"{MV % 4} |||")
@@ -97,12 +99,8 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                 await update.effective_chat.send_message(
                     'Всім привіт, тепер я буду кликати вас!\n'
                     'Я почну кликати користувача як тільки він напише хоч одне повідомлення!\n'
-                    '*Вся інформація по використанню команд та моєму налаштуванню є в Wiki*',
-                    reply_markup=InlineKeyboardMarkup([
-                        [InlineKeyboardButton(text='Wiki',
-                                              url='https://github.com/cheuS1-n/CallMeBotUA/wiki/%D0'
-                                                  '%94%D0%BE%D0%BC%D1%96%D0%B2%D0%BA%D0%B0')],
-                    ]), parse_mode=telegram.constants.ParseMode.MARKDOWN)
+                    'Команда щоб покликати всіх /all | Ця команда також доступна з меню команд\n',
+                    parse_mode=telegram.constants.ParseMode.MARKDOWN)
     UNick = update.effective_user.username
     UID = update.effective_user.id
     CID = update.effective_chat.id
@@ -114,32 +112,38 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         print("LEN 0")
         if update.effective_user.username is None:
             if LAddNewProfile(CID, UID, f"!{update.effective_user.first_name}"):
-                print(f"User added, alternative method")
+                loggerm.info(
+                    f"Added new user to DB:\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\nAlternative method.")
+                return
             else:
-                print("Dont added")
-            return
-
+                loggerm.warning(
+                    "DONT ADDED new user to DB:\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\nAlternative method.")
+                return
+        LAddNewProfile(CID, UID, UNick)
+        loggerm.info(
+            f"Added new user to DB:\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}")
 
     if update.effective_user.username is None:
         print("NONE")
         if str(info[0][2]).startswith("!"):
             if str(info[0][2]) == str(f"!{update.effective_user.first_name}"):
-                print("Update not need, nicks are indentical | Alternative method")
+                loggerm.info(f"Update not need, nicks are indentical\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\n Alternative method")
                 return
             else:
                 if ChangeNick(update.effective_user.id, f"!{update.effective_chat.first_name}"):
-                    print("NICK CHANGED! But user dont have nick, used alternative method.")
+                    loggerm.info(f"NICK CHANGED!\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\nAlternative method.")
                     return
                 else:
-                    logger.error("NICKS DONT CHANGED, CHANGE ERROR! | Alternative method.")
+                    logger.warning(f"NICKS DONT CHANGED, CHANGE ERROR!\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\nAlternative method.")
                     return
     if str(info[0][2]) == str(UNick):
-        print("Update not need, nicks are indentical")
+        loggerm.info(f"Update not need, nicks are indentical\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}")
         return
     if ChangeNick(UID, UNick):
-        print("NICK CHANGED")
+        loggerm.info(f"NICK CHANGED\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}")
     else:
-        print("Nick Dont changed")
+        loggerm.warning(f"Nick Dont changed\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}")
+
 
 async def Info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
@@ -151,11 +155,14 @@ async def Info(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton(text='Github', url='https://github.com/cheuS1-n/CallMeBotUALite/')]
         ])
     )
+
+
 async def AllPingsUsers(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type == "private":
         await update.effective_message.reply_text("Використовуйте цю команду тільки в чаті групи!")
         return
-    await update.effective_message.reply_text(f"Я можу покликати: {len(ParseAllUsers(update.effective_chat.id))} користувача(-ів). \nДетальніше у Wiki.")
+    await update.effective_message.reply_text(
+        f"Я можу покликати: {len(ParseAllUsers(update.effective_chat.id))} користувача(-ів). \nДетальніше у Wiki.")
 
 
 def STARTL():
@@ -167,6 +174,7 @@ def STARTL():
         Lapplication.add_handler(CommandHandler('allusers', AllPingsUsers))
         Lapplication.add_handler(MessageHandler(filters.ALL, Updater))
         Lapplication.run_polling()
+
 
 if startdbs():
     STARTL()
