@@ -51,13 +51,14 @@ async def All(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "На жаль, список на пінг пустий. Для детальнішої інформації прочитайте Wiki - /info")
     PINGLIST = []
     PRINTLIST = []
+    APINGLIST = []
     MV = 0
-    GMV = 0
     for x in info:
         if x[2].startswith("!"):
+            print("+++")
             id = x[1]
             nick = x[2].replace("!", "")
-            PINGLIST.extend([f"[{nick}](tg://user?id={id})"])
+            APINGLIST.extend([f"[{nick}](tg://user?id={id})"])
             break
         else:
             PINGLIST.extend([f"@{x[2]}"])
@@ -68,25 +69,45 @@ async def All(update: Update, context: ContextTypes.DEFAULT_TYPE):
             break
         PRINTLIST.extend([f"{PINGLIST[MV]}"])
         MV = MV + 1
-        GMV = GMV + 1
         if (MV % 4) == 0:
             print("SENDMSG MV%")
-            await update.effective_chat.send_message(' '.join(PRINTLIST),
-                                                     parse_mode=telegram.constants.ParseMode.MARKDOWN)
+            await update.effective_chat.send_message(' '.join(PRINTLIST))
             PRINTLIST.clear()
         elif (MV % 4) > 0:
             print("MV%>0")
-            if (len(PINGLIST) - MV) <= 4:
-                print("<4")
+            print(f"MV: {MV} | PL: {len(PINGLIST)}")
+            if (len(PINGLIST) - MV) <= 2:
+                print("<2")
                 for x in range(len(PINGLIST) - MV):
                     PRINTLIST.extend([f"{PINGLIST[MV]}"])
                     MV = MV + 1
+                await update.effective_chat.send_message(' '.join(PRINTLIST))
+                break
+        print(f"{MV % 4} |||")
+    PINGLIST.clear()
+    PRINTLIST.clear()
+    MV = 0
+    print(f"LENA: {len(APINGLIST)} | {APINGLIST}")
+    if not len(APINGLIST) == 0:
+        print(f"APL: {APINGLIST}")
+        for x in APINGLIST:
+            PRINTLIST.extend([f"{APINGLIST[MV]}"])
+            MV = MV + 1
+            if (MV % 4) == 0:
+                print("ASENDMSG MV%")
                 await update.effective_chat.send_message(' '.join(PRINTLIST),
                                                          parse_mode=telegram.constants.ParseMode.MARKDOWN)
-                break
-
-        print(f"{MV % 4} |||")
-        t.sleep(0.1)
+                PRINTLIST.clear()
+            elif (MV % 4) > 0:
+                print("AMV%>0")
+                if (len(PINGLIST) - MV) <= 4:
+                    print("<4A")
+                    for x in range(len(PINGLIST) - MV):
+                        PRINTLIST.extend([f"{PINGLIST[MV]}"])
+                        MV = MV + 1
+                    await update.effective_chat.send_message(' '.join(PRINTLIST),
+                                                             parse_mode=telegram.constants.ParseMode.MARKDOWN)
+                    break
 
     print(PINGLIST)
 
@@ -122,6 +143,7 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         LAddNewProfile(CID, UID, UNick)
         loggerm.info(
             f"Added new user to DB:\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}")
+        return 
 
     if update.effective_user.username is None:
         print("NONE")
@@ -147,12 +169,13 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def Info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(
-        "Інформація про бота та інше.\n"
-        'Бот "Поклич мене! Lite" є вашим помічником, який покличе всіх у потрібний момент)\n'
+        "Інформація про бота\n"
+        'Бот "Поклич мене! Lite" є Вашим помічником, який покличе всіх у потрібний момент.\n'
         'Версія: 1.0\n'
         "Власник: @Quality2Length",
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(text='Github', url='https://github.com/cheuS1-n/CallMeBotUALite/')]
+            [InlineKeyboardButton(text='Github', url='https://github.com/cheuS1-n/CallMeBotUALite/')],
+            [InlineKeyboardButton(text='Інші боти', url='https://t.me/cheus1_devs')]
         ])
     )
 
@@ -162,7 +185,7 @@ async def AllPingsUsers(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text("Використовуйте цю команду тільки в чаті групи!")
         return
     await update.effective_message.reply_text(
-        f"Я можу покликати: {len(ParseAllUsers(update.effective_chat.id))} користувача(-ів). \nДетальніше у Wiki.")
+        f"Я можу покликати: {len(ParseAllUsers(update.effective_chat.id))} користувача(-ів).")
 
 
 def STARTL():
@@ -171,7 +194,7 @@ def STARTL():
         Lapplication.add_handler(CommandHandler('start', start_private_chat))
         Lapplication.add_handler(CommandHandler('all', All))
         Lapplication.add_handler(CommandHandler('info', Info))
-        Lapplication.add_handler(CommandHandler('allusers', AllPingsUsers))
+        Lapplication.add_handler(CommandHandler('userslist', AllPingsUsers))
         Lapplication.add_handler(MessageHandler(filters.ALL, Updater))
         Lapplication.run_polling()
 
