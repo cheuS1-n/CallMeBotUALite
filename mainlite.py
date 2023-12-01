@@ -36,7 +36,8 @@ async def start_private_chat(update: Update, context: ContextTypes.DEFAULT_TYPE)
         f'/info щоб дізнатись додаткову інформацію\n'
         f'Вся детальна інформація по командам і чим відрізняється Lite версія від звичайної можна прочитати в моїй Wiki ⬇️',
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton(text='Wiki', url='?*?????')]
+            [InlineKeyboardButton(text='Wiki', url='https://github.com/cheuS1-n/CallMeBotUA/wiki/Lite-%D0%B2%D0%B5%D1%80%D1%81%D1%96%D1%8F'
+              )]
         ]))
 
 
@@ -119,9 +120,13 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             if member.username == context.bot.username:
                 await update.effective_chat.send_message(
                     'Всім привіт, тепер я буду кликати вас!\n'
-                    'Я почну кликати користувача як тільки він напише хоч одне повідомлення!\n'
+                    'Я зможу покликати користувача як тільки він напише хоч одне повідомлення!\n'
                     'Команда щоб покликати всіх /all | Ця команда також доступна з меню команд\n',
-                    parse_mode=telegram.constants.ParseMode.MARKDOWN)
+                    parse_mode=telegram.constants.ParseMode.MARKDOWN,
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton(text='Wiki',
+                                              url='https://github.com/cheuS1-n/CallMeBotUA/wiki/Lite-%D0%B2%D0%B5%D1%80%D1%81%D1%96%D1%8F')],
+                    ]))
     UNick = update.effective_user.username
     UID = update.effective_user.id
     CID = update.effective_chat.id
@@ -132,7 +137,7 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if len(info) == 0:
         print("LEN 0")
         if update.effective_user.username is None:
-            if LAddNewProfile(CID, UID, f"!{update.effective_user.first_name}"):
+            if LAddNewProfile(CID, UID, f"!{RBS(update.effective_user.first_name)}"):
                 loggerm.info(
                     f"Added new user to DB:\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\nAlternative method.")
                 return
@@ -147,7 +152,7 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     if update.effective_user.username is None:
         print("NONE")
-        if str(info[0][2]).startswith("!"):
+        """if str(info[0][2]).startswith("!"):
             if str(info[0][2]) == str(f"!{update.effective_user.first_name}"):
                 loggerm.info(f"Update not need, nicks are indentical\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\n Alternative method")
                 return
@@ -157,14 +162,27 @@ async def Updater(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
                     return
                 else:
                     logger.warning(f"NICKS DONT CHANGED, CHANGE ERROR!\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\nAlternative method.")
-                    return
+                    return"""
+        if str(info[0][2]) == str(f"!{RBS(update.effective_user.first_name)}"):
+            loggerm.info(
+                f"Update not need, nicks are indentical\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}\n Alternative method")
+            return
+        else:
+            if ChangeNick(update.effective_user.id, f"!{RBS(update.effective_user.first_name)}"):
+                loggerm.info(
+                    f"NICK CHANGED!\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}, OldNickName: {info[0][2]}\nAlternative method.")
+                return
+            else:
+                logger.warning(
+                    f"NICKS DONT CHANGED, CHANGE ERROR!\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserFLName: {update.effective_user.full_name}, OldNickName: {info[0][2]}\nAlternative method.")
+                return
     if str(info[0][2]) == str(UNick):
         loggerm.info(f"Update not need, nicks are indentical\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}")
         return
     if ChangeNick(UID, UNick):
-        loggerm.info(f"NICK CHANGED\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}")
+        loggerm.info(f"NICK CHANGED\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}, OldNickName: {info[0][2]}")
     else:
-        loggerm.warning(f"Nick Dont changed\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}")
+        loggerm.warning(f"Nick Dont changed\nChannelID: {CID}, ChannelName: {update.effective_chat.title}, UserID: {UID}, UserNickname: {UNick}, OldNickName: {info[0][2]}")
 
 
 async def Info(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -172,11 +190,14 @@ async def Info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Інформація про бота\n"
         'Бот "Поклич мене! Lite" є Вашим помічником, який покличе всіх у потрібний момент.\n'
         'Версія: 1.0\n'
-        "Власник: @Quality2Length",
+        "Власник: @Quality2Length\n"
+        "*Це Lite версія, є ще повноцінна версія, різницю між ними можете подивитись нижче.*",
         reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton(text='Wiki', url='https://github.com/cheuS1-n/CallMeBotUA/wiki/Lite-%D0%B2%D0%B5%D1%80%D1%81%D1%96%D1%8F')],
             [InlineKeyboardButton(text='Github', url='https://github.com/cheuS1-n/CallMeBotUALite/')],
+            [InlineKeyboardButton(text='Різниця', url='https://github.com/cheuS1-n/CallMeBotUA/wiki/%D0%A0%D1%96%D0%B7%D0%BD%D0%B8%D1%86%D1%8F-%D0%BC%D1%96%D0%B6-%D0%B7%D0%B2%D0%B8%D1%87%D0%B0%D0%B9%D0%BD%D0%BE%D1%8E-%D1%82%D0%B0-Lite-%D0%B2%D0%B5%D1%80%D1%81%D1%96%D1%94%D1%8E.')],
             [InlineKeyboardButton(text='Інші боти', url='https://t.me/cheus1_devs')]
-        ])
+        ]), parse_mode=telegram.constants.ParseMode.MARKDOWN
     )
 
 
